@@ -18,15 +18,13 @@ public class KodoBlobStore extends AbstractComponent implements BlobStore {
     private final ByteSizeValue bufferSize;
     private final KodoClient client;
     private final String bucket;
-    private final String region;
     private final String path;
     private final int numberOfRetries;
 
-    public KodoBlobStore(Settings settings, KodoClient client, String bucket, String region, ByteSizeValue bufferSize, int numberOfRetries, String path) {
+    public KodoBlobStore(Settings settings, KodoClient client, String bucket, ByteSizeValue bufferSize, int numberOfRetries, String path) {
         super(settings);
         this.client = client;
         this.bucket = bucket;
-        this.region = region;
         this.path = path;
         this.numberOfRetries = numberOfRetries;
         this.bufferSize = bufferSize == null?new ByteSizeValue(4L, ByteSizeUnit.MB):bufferSize;
@@ -46,8 +44,8 @@ public class KodoBlobStore extends AbstractComponent implements BlobStore {
             marker = fileListing.marker;
             FileInfo[] infos = fileListing.items;
 
-            for(int i = 0; i < infos.length; ++i) {
-                keysToDelete.add(infos[i].key);
+            for (FileInfo info : infos) {
+                keysToDelete.add(info.key);
             }
         } while(!fileListing.isEOF());
 

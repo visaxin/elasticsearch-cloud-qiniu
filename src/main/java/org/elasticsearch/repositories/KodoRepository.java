@@ -20,7 +20,6 @@ public class KodoRepository extends BlobStoreRepository {
     public static final String TYPE = "kodo";
     private final KodoBlobStore blobStore;
     private final BlobPath basePath;
-    private static final ESLogger log = ESLoggerFactory.getLogger(KodoRepository.class.getName());
 
     @Inject
     public KodoRepository(RepositoryName repositoryName, RepositorySettings settings, IndexShardRepository indexShardRepository) {
@@ -41,13 +40,14 @@ public class KodoRepository extends BlobStoreRepository {
                     settings.settings().get(KodoService.Repository_Kodo.SECRET_KEY),
                     domain);
 
-            String pathParam = settings.settings().get(KodoService.Repository_Kodo.BASE_PATH);
-            pathParam = Strings.trimLeadingCharacter(pathParam, '/');
-            if (!pathParam.endsWith("/")) {
-                pathParam = pathParam + "/";
+            // legal base path config example: my_path/ or my_path or /my_path/ ==> my_path (convert result)
+            String pathPrefix = settings.settings().get(KodoService.Repository_Kodo.BASE_PATH);
+            pathPrefix = Strings.trimLeadingCharacter(pathPrefix, '/');
+            if (!pathPrefix.endsWith("/")) {
+                pathPrefix = pathPrefix + "/";
             }
 
-            this.blobStore = new KodoBlobStore(settings.settings(), kodoClient, bucket, "", new ByteSizeValue(4L, ByteSizeUnit.MB), 3, pathParam);
+            this.blobStore = new KodoBlobStore(settings.settings(), kodoClient, bucket, new ByteSizeValue(4L, ByteSizeUnit.MB), 3, pathPrefix);
             this.basePath = BlobPath.cleanPath();
         }
     }
